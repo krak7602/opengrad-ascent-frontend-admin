@@ -18,21 +18,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         let admin1 = null;
         const { email, password, role } =
           await signInSchema.parseAsync(credentials);
-        volunteer1 = {
-          email: "volunteer1@gmail.com",
-          password: "volu2#AA",
-          role: "volunteer",
-        };
-        partner1 = {
-          email: "partner1@gmail.com",
-          password: "part2#AA",
-          role: "partner",
-        };
-        admin1 = {
-          email: "admin1@gmail.com",
-          password: "admi2#AA",
-          role: "admin",
-        };
         try {
           const resp = await axios.post(
             `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`,
@@ -63,23 +48,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         } catch (e) {
           console.log(e);
         }
-
-        if (role === "admin") {
-          if (email != admin1.email || password != admin1.password) {
-            throw new Error("Adminstrator account not found.");
-          }
-        }
-        if (role === "partner") {
-          if (email != partner1.email || password != partner1.password) {
-            throw new Error("Organization account not found.");
-          }
-        }
-        if (role === "volunteer") {
-          if (email != volunteer1.email || password != volunteer1.password) {
-            throw new Error("Volunteer account not found.");
-          }
-        }
-        return { email: email, password: password, role: role };
+        return null;
       },
     }),
   ],
