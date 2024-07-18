@@ -37,7 +37,7 @@ export default function Page({
   }
 
   const { data, loading, error, refetch, abort } = useFetch<vol[]>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/volbyPoc/1`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/volbyPoc/${params.slug}`,
     {
       headers: {
         authorization: `Bearer ${session.data?.user.auth_token}`,
