@@ -54,6 +54,7 @@ export default function SignIn({ curRole }: { curRole: string }) {
       role: role,
       redirect: false,
     }).then((callback) => {
+      console.log("The callback:", callback);
       if (callback?.error) {
         toast({ description: "Invalid credentials" });
       }
