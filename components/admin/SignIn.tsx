@@ -55,10 +55,9 @@ export default function SignIn({ curRole }: { curRole: string }) {
       redirect: false,
     }).then((callback) => {
       console.log("The callback:", callback);
-      if (callback?.error) {
-        toast({ description: "Invalid credentials" });
-      }
-      if (callback?.ok && !callback?.error) {
+      if (callback?.error != null) {
+        toast({ title: "Invalid credentials!" });
+      } else if (callback?.ok && !callback?.error) {
         router.push("/dashboard");
       }
     });
