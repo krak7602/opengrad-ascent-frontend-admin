@@ -73,7 +73,7 @@ export function AddVolunteer({ id }: { id: number }) {
           {send && (
             <div className=" flex flex-col items-center gap-3">
               <SentIcon className=" text-primary" />
-              <div>Partner invite has been send successfully.</div>
+              <div>Volunteer invite has been send successfully.</div>
             </div>
           )}
           {!send && (
