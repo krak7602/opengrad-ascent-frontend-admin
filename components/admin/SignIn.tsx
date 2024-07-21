@@ -26,9 +26,11 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { signInSchema } from "@/lib/zod";
 import { ForgotPasswordPopup } from "@/components/volunteer/ForgotPasswordPopup";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function SignIn({ curRole }: { curRole: string }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [showPassword, setShowPassword] = React.useState(false);
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -46,15 +48,18 @@ export default function SignIn({ curRole }: { curRole: string }) {
     }
     const { email, password, role } = validatedFields.data;
 
-    await signIn("credentials", {
+    const res = await signIn("credentials", {
       email: email,
       password: password,
       role: role,
       redirect: false,
+    }).then((callback) => {
+      if (callback?.error) {
+        toast({ description: "Invalid credentials" });
+      }
     });
     router.push("/dashboard");
   }
-
   async function togglePasswordVisiblity() {
     setShowPassword(!showPassword);
   }
