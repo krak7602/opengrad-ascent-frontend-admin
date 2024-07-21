@@ -48,7 +48,7 @@ export default function SignIn({ curRole }: { curRole: string }) {
     }
     const { email, password, role } = validatedFields.data;
 
-    const res = await signIn("credentials", {
+    signIn("credentials", {
       email: email,
       password: password,
       role: role,
@@ -57,8 +57,10 @@ export default function SignIn({ curRole }: { curRole: string }) {
       if (callback?.error) {
         toast({ description: "Invalid credentials" });
       }
+      if (callback?.ok && !callback?.error) {
+        router.push("/dashboard");
+      }
     });
-    router.push("/dashboard");
   }
   async function togglePasswordVisiblity() {
     setShowPassword(!showPassword);
