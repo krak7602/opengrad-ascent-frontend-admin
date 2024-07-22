@@ -95,7 +95,7 @@ export default function SignIn({ curRole }: { curRole: string }) {
   }
 
   return (
-    <div>
+    <div className="w-full h-full">
       <Card>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
