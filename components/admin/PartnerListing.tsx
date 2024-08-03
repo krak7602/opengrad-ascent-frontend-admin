@@ -3,6 +3,9 @@ import { PartnerTable } from "@/components/admin/PartnerTable";
 import { columns } from "@/components/admin/PartnerColumn";
 import { useSession } from "next-auth/react";
 import { useFetch } from "@/lib/useFetch";
+import { useQuery, useIsFetching } from "@tanstack/react-query";
+import Loading from "../Loading";
+import Error from "../Error";
 
 export default function PartnerListing() {
   interface poc {
@@ -17,34 +20,56 @@ export default function PartnerListing() {
     role: string;
   }
   const session = useSession();
-  const { data, loading, error, refetch, abort } = useFetch<poc[]>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/poc`,
-    {
-      headers: {
-        authorization: `Bearer ${session.data?.user.auth_token}`,
-      },
-      autoInvoke: true,
+  // const { data, loading, error, refetch, abort } = useFetch<poc[]>(
+  //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/poc`,
+  //   {
+  //     headers: {
+  //       authorization: `Bearer ${session.data?.user.auth_token}`,
+  //     },
+  //     autoInvoke: true,
+  //   },
+  //   [session],
+  // );
+
+  const { data, isLoading, isError, isSuccess } = useQuery<poc[]>({
+    queryKey: ["poc"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/poc`,
+        {
+          headers: {
+            authorization: `Bearer ${session.data?.user.auth_token}`,
+          },
+        }
+      );
+      return res.json();
     },
-    [session],
-  );
+    enabled: !!session.data?.user.auth_token,
+  });
 
   return (
-    <div className="container mx-auto my-6 px-2 lg:px-8">
-      <div className="flex flex-col lg:flex-row items-start justify-between mb-2 py-4 rounded bg-primary text-white px-4">
-        <h1 className="text-2xl pb-1 font-bold">Partners</h1>
-        <div className="flex w-full flex-row justify-end">
-          <div className=" text-black">
-            <AddPartner />
+    <>
+      {isError && <Error />}
+      {!isError && isLoading && <Loading />}
+      {!isError && !isLoading && data && (
+        <div className="container mx-auto my-6 px-2 lg:px-8">
+          <div className="flex flex-col lg:flex-row items-start justify-between mb-2 py-4 rounded bg-primary text-white px-4">
+            <h1 className="text-2xl pb-1 font-bold">Partners</h1>
+            <div className="flex w-full flex-row justify-end">
+              <div className=" text-black">
+                <AddPartner />
+              </div>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            {data && data.constructor === Array && (
+              <div>
+                <PartnerTable columns={columns} data={data} />
+              </div>
+            )}
           </div>
         </div>
-      </div>
-      <div className="overflow-x-auto">
-        {data && data.constructor === Array && (
-          <div>
-            <PartnerTable columns={columns} data={data} />
-          </div>
-        )}
-      </div>
-    </div>
+      )}
+    </>
   );
 }
