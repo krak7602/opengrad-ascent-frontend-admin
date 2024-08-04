@@ -6,6 +6,7 @@ import { useFetch } from "@/lib/useFetch";
 import { useQuery, useIsFetching } from "@tanstack/react-query";
 import Loading from "../Loading";
 import Error from "../Error";
+import Refetching from "../Refetching";
 
 export default function PartnerListing() {
   interface poc {
@@ -31,7 +32,7 @@ export default function PartnerListing() {
   //   [session],
   // );
 
-  const { data, isLoading, isError, isSuccess } = useQuery<poc[]>({
+  const { data, isLoading, isError, isSuccess, isRefetching } = useQuery<poc[]>({
     queryKey: ["poc"],
     queryFn: async () => {
       const res = await fetch(
@@ -44,15 +45,19 @@ export default function PartnerListing() {
       );
       return res.json();
     },
+    refetchOnMount: true,
+    staleTime: 30000,
+    refetchInterval:30000,
     enabled: !!session.data?.user.auth_token,
   });
-
+  
   return (
     <>
       {isError && <Error />}
       {!isError && isLoading && <Loading />}
       {!isError && !isLoading && data && (
         <div className="container mx-auto my-6 px-2 lg:px-8">
+          {isRefetching && <Refetching />}
           <div className="flex flex-col lg:flex-row items-start justify-between mb-2 py-4 rounded bg-primary text-white px-4">
             <h1 className="text-2xl pb-1 font-bold">Partners</h1>
             <div className="flex w-full flex-row justify-end">

@@ -13,15 +13,7 @@ export default function Loading() {
             Loading...
           </h1>
         </div>
-        <div className="mt-6">
-          <Link
-            href="#"
-            className="inline-flex items-center rounded-md bg-green-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-            prefetch={false}
-          >
-            Go to Homepage
-          </Link>
-        </div>
+        
       </div>
     </div>
   );
