@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 
 export default function Error() {
@@ -14,16 +13,15 @@ export default function Error() {
           </h1>
         </div>
         <p className="mt-4 text-muted-foreground">
-          We're sorry, but an unexpected error has occurred. Please try again
-          later or contact support if the issue persists.
+          We&apos;re sorry, but an unexpected error has occurred. Please try
+          again later or contact support if the issue persists.
         </p>
-        
       </div>
     </div>
   );
 }
 
-function TriangleAlertIcon(props:any) {
+function TriangleAlertIcon(props: any) {
   return (
     <svg
       {...props}

@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 
 export default function Loading() {
@@ -13,13 +12,12 @@ export default function Loading() {
             Loading...
           </h1>
         </div>
-        
       </div>
     </div>
   );
 }
 
-function LoaderIcon(props) {
+function LoaderIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

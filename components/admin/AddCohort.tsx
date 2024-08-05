@@ -54,8 +54,18 @@ export function AddCohort() {
   const [recipientPartners, setRecipientPartners] = useListState<poc>([]);
   const [recipientPartnerCount, setRecipientPartnerCount] = useState(0);
   const [send, setSend] = useState(false);
-  const queryClient =useQueryClient()
-  const { data, isError, isLoading, isSuccess } = useQuery({
+  const queryClient = useQueryClient();
+  const {
+    data,
+    isError,
+    isLoading,
+    isSuccess,
+  }: {
+    data: poc[] | undefined;
+    isError: boolean;
+    isLoading: boolean;
+    isSuccess: boolean;
+  } = useQuery({
     queryKey: ["poc"],
     queryFn: async () => {
       const resp = await axios.get(
@@ -64,7 +74,7 @@ export function AddCohort() {
           headers: {
             authorization: `Bearer ${session.data?.user.auth_token}`,
           },
-        }
+        },
       );
       return resp.data;
     },
@@ -82,7 +92,7 @@ export function AddCohort() {
           headers: {
             authorization: `Bearer ${session.data?.user.auth_token}`,
           },
-        }
+        },
       );
       return resp.data;
     },
@@ -94,9 +104,9 @@ export function AddCohort() {
       setToDate(undefined);
       setRecipientPartnerCount(0);
       setRecipientPartners.setState([]);
-      queryClient.invalidateQueries({queryKey: ['cohort']});
+      queryClient.invalidateQueries({ queryKey: ["cohort"] });
     },
-    
+
     onError: (error) => {
       console.error("Error creating cohort:", error);
     },

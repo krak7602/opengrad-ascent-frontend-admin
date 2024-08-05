@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 
 export default function Nodata() {
@@ -14,13 +13,12 @@ export default function Nodata() {
             There is no data to display at this time.
           </p>
         </div>
-        
       </div>
     </div>
   );
 }
 
-function BoxIcon(props) {
+function BoxIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
