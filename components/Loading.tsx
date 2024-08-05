@@ -5,10 +5,10 @@ export default function Loading() {
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-md text-center">
         <div className="mt-8 flex items-center justify-center">
-          <div className="rounded-full bg-green-500 p-2 text-white animate-pulse">
+          <div className="rounded-full gap-1 bg-green-500 p-2 text-white animate-pulse">
             <LoaderIcon className="h-6 w-6 animate-spin" />
           </div>
-          <h1 className="mt-4 text-3xl font-bold tracking-tight text-green-500 sm:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-green-500 sm:text-4xl">
             Loading...
           </h1>
         </div>
