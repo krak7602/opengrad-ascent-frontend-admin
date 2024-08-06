@@ -1,6 +1,6 @@
 import { AddPartner } from "@/components/admin/AddPartner";
 import { PartnerInviteTable } from "@/components/admin/PartnerInviteTable";
-import { columns } from "@/components/admin/PartnerColumn";
+import { columns } from "@/components/admin/PartnerInviteColumn";
 import { useSession } from "next-auth/react";
 import { useFetch } from "@/lib/useFetch";
 import { useQuery, useIsFetching } from "@tanstack/react-query";
@@ -11,15 +11,12 @@ import Refetching from "../Refetching";
 export default function PartnerInviteListing() {
   interface poc {
     id: number;
-    user_id: user_id;
-  }
-
-  interface user_id {
-    id: number;
     name: string;
     email: string;
     role: string;
+    closed: string;
   }
+
   const session = useSession();
   // const { data, loading, error, refetch, abort } = useFetch<poc[]>(
   //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/poc`,
@@ -35,10 +32,10 @@ export default function PartnerInviteListing() {
   // TODO: Change the request to partner
   const { data, isLoading, isError, isSuccess, isRefetching } = useQuery<poc[]>(
     {
-      queryKey: ["poc"],
+      queryKey: ["pocInviteList"],
       queryFn: async () => {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/poc`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/pocinvites`,
           {
             headers: {
               authorization: `Bearer ${session.data?.user.auth_token}`,
