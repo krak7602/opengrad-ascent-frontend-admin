@@ -1,7 +1,7 @@
 "use client";
 import { AddVolunteer } from "@/components/admin/AddVolunteer";
-import { VolunteerTable } from "@/components/admin/VolunteerTable";
-import { columns } from "@/components/admin/VolunteerColumn";
+import { VolunteerInviteTable } from "@/components/admin/VolunteerInviteTable";
+import { columns } from "@/components/admin/VolunteerInviteColumn";
 import { useSession } from "next-auth/react";
 import { useFetch } from "@/lib/useFetch";
 import { useQuery, useIsFetching } from "@tanstack/react-query";
@@ -123,7 +123,7 @@ export default function Page({
             {isRefetching && <Refetching />}
             {data && data.constructor === Array && (
               <div>
-                <VolunteerTable columns={columns} data={data} />
+                <VolunteerInviteTable columns={columns} data={data} />
               </div>
             )}
           </div>
