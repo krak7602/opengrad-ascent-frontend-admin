@@ -11,6 +11,7 @@ import { StudentTable } from "@/components/admin/StudentTable";
 import { useQuery } from "@tanstack/react-query";
 import Error from "@/components/Error";
 import Loading from "@/components/Loading"; 
+import Refetching from "@/components/Refetching";
 
 export default function Page({
   params,
@@ -137,6 +138,7 @@ const {data:dataStudents,isError:stdErr,isLoading:stdLoading,isRefetching:stdRef
         </div>
         <div className="overflow-x-auto">
           <TabsContent value="students">
+            {stdRefetching && (<Refetching/>)}
             {stdErr && <Error />}
             {!stdErr && stdLoading && <Loading />}
             {!stdErr && !stdLoading && dataStudents && (
@@ -149,6 +151,7 @@ const {data:dataStudents,isError:stdErr,isLoading:stdLoading,isRefetching:stdRef
             )}
           </TabsContent>
           <TabsContent value="volunteers">
+            {isRefetching && <Refetching/>}
             {isError && <Error />}
             {!isError && isLoading && <Loading />}
             {!isError && !isLoading && data && data.constructor === Array && (

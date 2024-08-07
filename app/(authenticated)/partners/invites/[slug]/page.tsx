@@ -126,6 +126,7 @@ export default function Page({
             <div className=" text-sm">Volunteer Invites</div>
           </div>
         </div>
+        {isRefetching && <Refetching />}
         {!isError && isLoading && <Loading />}
         {!isError && !isLoading && data && data.constructor === Array && (
           <div className="overflow-x-auto">

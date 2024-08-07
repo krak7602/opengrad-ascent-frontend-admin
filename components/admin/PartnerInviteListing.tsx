@@ -53,6 +53,7 @@ export default function PartnerInviteListing() {
 
   return (
     <>
+      {isRefetching && <Refetching/>}
       {isError && <Error />}
       {!isError && isLoading && <Loading />}
       {!isError && !isLoading && data && (
