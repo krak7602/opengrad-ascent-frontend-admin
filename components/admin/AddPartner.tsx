@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import axios from "axios";
 import { useSession } from "next-auth/react";
-import { useMutation } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 export function AddPartner() {
   const [open, setOpen] = React.useState(false);
@@ -70,7 +70,9 @@ function PartnerAddForm({ className }: React.ComponentProps<"form">) {
   const [orgEmail, setOrgEmail] = React.useState("");
   const session = useSession();
   const [send, setSend] = React.useState(false);
+  const queryClient = useQueryClient();
   const mutation = useMutation({
+    mutationKey: ["createPartner"],
     mutationFn: async (data: { orgName: string; orgEmail: string }) => {
       const invite_resp = await axios.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/pocinvite`,
@@ -102,6 +104,12 @@ function PartnerAddForm({ className }: React.ComponentProps<"form">) {
           return profileset_resp;
         }
       }
+    },
+    onSettled: () => {
+      setSend(true);
+      setOrgName("");
+      setOrgEmail("");
+      queryClient.invalidateQueries({ queryKey: ["pocInviteList"] });
     },
   });
   const onSubmit = async (e: React.FormEvent) => {

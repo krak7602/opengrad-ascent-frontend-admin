@@ -8,6 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useQuery } from "@tanstack/react-query";
 interface user_id {
   id: number;
   name: string;
@@ -22,17 +23,35 @@ interface vol {
 
 export function VolunteerDetails({ volId }: { volId: number }) {
   const session = useSession();
-  const { data, loading, error, refetch, abort } = useFetch<vol>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/volById/${volId}`,
-    {
-      headers: {
-        authorization: `Bearer ${session.data?.user.auth_token}`,
-      },
-      autoInvoke: true,
+  // const { data, loading, error, refetch, abort } = useFetch<vol>(
+  //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/volById/${volId}`,
+  //   {
+  //     headers: {
+  //       authorization: `Bearer ${session.data?.user.auth_token}`,
+  //     },
+  //     autoInvoke: true,
+  //   },
+  //   [session],
+  // );
+  
+  const {data,isLoading,isError,isRefetching} = useQuery({
+    queryKey: ['volDetails', Number(volId)],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/volById/${volId}`,
+        {
+          headers: {
+            authorization: `Bearer ${session.data?.user.auth_token}`,
+          },
+        },
+      );
+      return await res.json();
     },
-    [session],
-  );
-
+    refetchOnMount: true,
+    staleTime: 30000,
+    enabled: !!session.data?.user.auth_token,
+    refetchInterval: 10000,
+  });
   return (
     <div>
       <Popover>
@@ -40,12 +59,15 @@ export function VolunteerDetails({ volId }: { volId: number }) {
           <Button variant="outline">Details</Button>
         </PopoverTrigger>
         <PopoverContent className="w-80">
-          {loading && (
+          {isError && (
+            <div>Error fetching data</div>
+          )}
+          {!isError && isLoading && (
             <div>
               <Skeleton className="h-8 w-full rounded-md" />
             </div>
           )}
-          {data?.user_id && (
+          {!isError && !isLoading && data?.user_id && (
             <div>
               <div className="grid gap-4">
                 <div className="space-y-2">

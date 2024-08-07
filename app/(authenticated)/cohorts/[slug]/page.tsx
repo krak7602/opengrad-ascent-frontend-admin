@@ -8,6 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSession } from "next-auth/react";
 import { useFetch } from "@/lib/useFetch";
 import { StudentTable } from "@/components/admin/StudentTable";
+import { useQuery } from "@tanstack/react-query";
+import Error from "@/components/Error";
+import Loading from "@/components/Loading"; 
 
 export default function Page({
   params,
@@ -47,27 +50,66 @@ export default function Page({
     cohortId: number;
   }
 
-  const { data, loading, error, refetch, abort } = useFetch<vols[]>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/cohort/volByCohort/${Number(params.slug)}`,
-    {
-      headers: {
-        authorization: `Bearer ${session.data?.user.auth_token}`,
-      },
-      autoInvoke: true,
+  const {data,isError,isLoading,isRefetching} = useQuery({
+    queryKey: ['volunteer', Number(params.slug)],
+    queryFn: async () => {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/cohort/volByCohort/${Number(params.slug)}`,
+        {
+          headers: {
+            authorization: `Bearer ${session.data?.user.auth_token}`,
+          },
+        },
+      );
+      return await response.json();
     },
-    [session],
-  );
+    refetchInterval: 10000,
+    staleTime: 60000,
+    enabled: !!session.data?.user.auth_token,
+    refetchOnMount:true
+  })
 
-  const dataStudents = useFetch<student[]>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/students/getbyCohort/${Number(params.slug)}`,
-    {
-      headers: {
-        authorization: `Bearer ${session.data?.user.auth_token}`,
+  // const { data, loading, error, refetch, abort } = useFetch<vols[]>(
+  //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/cohort/volByCohort/${Number(params.slug)}`,
+  //   {
+  //     headers: {
+  //       authorization: `Bearer ${session.data?.user.auth_token}`,
+  //     },
+  //     autoInvoke: true,
+  //   },
+  //   [session],
+  // );
+
+  // const dataStudents = useFetch<student[]>(
+  //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/students/getbyCohort/${Number(params.slug)}`,
+  //   {
+  //     headers: {
+  //       authorization: `Bearer ${session.data?.user.auth_token}`,
+  //     },
+  //     autoInvoke: true,
+  //   },
+  //   [session],
+  // );
+const {data:dataStudents,isError:stdErr,isLoading:stdLoading,isRefetching:stdRefetching}=useQuery({
+  queryKey: ['students', Number(params.slug)],
+  queryFn: async () => {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/students/getbyCohort/${Number(params.slug)}`,
+      {
+        headers: {
+          authorization: `Bearer ${session.data?.user.auth_token}`,
+        },
       },
-      autoInvoke: true,
-    },
-    [session],
-  );
+    );
+    return await response.json();
+  },
+  refetchInterval: 10000,
+  staleTime: 60000,
+  enabled:!!session.data?.user.auth_token,
+  refetchOnMount:true
+})
+  
+  console.log(dataStudents)
   return (
     <Tabs id="cohort-tab" defaultValue="students">
       <div className="container mx-auto my-6 px-2 lg:px-8">
@@ -95,17 +137,21 @@ export default function Page({
         </div>
         <div className="overflow-x-auto">
           <TabsContent value="students">
-            {dataStudents.data && (
+            {stdErr && <Error />}
+            {!stdErr && stdLoading && <Loading />}
+            {!stdErr && !stdLoading && dataStudents && (
               <div>
                 <StudentTable
                   columns={studentColumns}
-                  data={dataStudents.data}
+                  data={dataStudents}
                 />
               </div>
             )}
           </TabsContent>
           <TabsContent value="volunteers">
-            {data && data.constructor === Array && (
+            {isError && <Error />}
+            {!isError && isLoading && <Loading />}
+            {!isError && !isLoading && data && data.constructor === Array && (
               <div>
                 <VolunteerTable columns={columns} data={data[0].vol} />
               </div>

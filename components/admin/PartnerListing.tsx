@@ -51,7 +51,7 @@ export default function PartnerListing() {
       },
       refetchOnMount: true,
       staleTime: 30000,
-      refetchInterval: 30000,
+      refetchInterval: 10000,
       enabled: !!session.data?.user.auth_token,
     },
   );

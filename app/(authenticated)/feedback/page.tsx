@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { useFetch } from "@/lib/useFetch";
 import { NotificationTable } from "@/components/admin/NotificationTable";
 import { columns } from "@/components/admin/NotificationColumn";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Page({
   params,
@@ -46,7 +47,7 @@ export default function Page({
       },
       autoInvoke: true,
     },
-    [session],
+    [session]
   );
   interface poc {
     id: number;
@@ -67,13 +68,13 @@ export default function Page({
       },
       autoInvoke: true,
     },
-    [session],
+    [session]
   );
 
   const [recipientCohortCount, setRecipientCohortCount] = useState(0);
   const [recipientPartnerCount, setRecipientPartnerCount] = useState(0);
   const [recipientCohorts, setRecipientCohorts] = useListState<cohortColumn>(
-    [],
+    []
   );
   const [recipientPartners, setRecipientPartners] = useListState<poc>([]);
   const [open, setOpen] = useState(false);
@@ -135,8 +136,30 @@ export default function Page({
       },
       autoInvoke: true,
     },
-    [session, recipientCohorts, recipientPartners],
+    [session, recipientCohorts, recipientPartners]
   );
+  // const { data: notifDataCohort,isLoading:notifCohortLoading,isError:notifCohortError} = useQuery({
+  //   queryKey: [
+  //     "NotiCohort",
+  //     Number(recipientCohorts[0]?.id),
+  //     Number(recipientPartners[0]?.id),
+  //   ],
+  //   queryFn: async () => {
+  //     const resCohort = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/notification/cohort/get/${recipientCohorts[0]?.id}`,
+  //       {
+  //         headers: {
+  //           authorization: `Bearer ${session.data?.user.auth_token}`,
+  //         },
+  //       }
+  //     );
+  //     return resCohort.json();
+  //   },
+  //   refetchInterval: 30000,
+  //   staleTime: 30000,
+  //   enabled: !!session.data?.user.auth_token,
+  //   refetchOnMount: true,
+  // });
 
   const notifDataPoc = useFetch<notif[]>(
     `${process.env.NEXT_PUBLIC_API_BASE_URL}/notification/poc/get/${recipientPartners[0]?.id}`,
@@ -146,8 +169,30 @@ export default function Page({
       },
       autoInvoke: true,
     },
-    [session, recipientCohorts, recipientPartners],
+    [session, recipientCohorts, recipientPartners]
   );
+  // const { data: notifDataPoc ,isLoading:notifPocLoading,isError:notifPocError} = useQuery({
+  //   queryKey: [
+  //     "NotiPoc",
+  //     Number(recipientCohorts[0]?.id),
+  //     Number(recipientPartners[0]?.id),
+  //   ],
+  //   queryFn: async () => {
+  //     const resPoc = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/notification/poc/get/${recipientPartners[0]?.id}`,
+  //       {
+  //         headers: {
+  //           authorization: `Bearer ${session.data?.user.auth_token}`,
+  //         },
+  //       }
+  //     );
+  //     return resPoc.json();
+  //   },
+  //   refetchInterval: 30000,
+  //   staleTime: 30000,
+  //   enabled: !!session.data?.user.auth_token,
+  //   refetchOnMount: true,
+  // });
 
   return (
     <div>

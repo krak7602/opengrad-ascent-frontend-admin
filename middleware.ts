@@ -20,7 +20,7 @@ export default auth((req) => {
   if (req.auth) {
     if (path == "/login" || path == "/") {
       return NextResponse.redirect(
-        new URL(`/dashboard`, `https://${hostname}`),
+        new URL(`/dashboard`, `http://${hostname}`),
       );
     }
   }
