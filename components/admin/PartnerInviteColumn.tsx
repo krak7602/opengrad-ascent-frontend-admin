@@ -64,7 +64,7 @@ const CellComponent = (row: CellContext<poc, unknown>) => {
     },
 
     onError: (error) => {
-      console.error("Error creating cohort:", error);
+      console.error("Error inviting partner:", error);
     },
   });
   if (row.row.original.closed != null) {

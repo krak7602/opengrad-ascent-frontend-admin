@@ -70,5 +70,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
+  session: {
+    maxAge: 86400,
+  },
   trustHost: true,
 });

@@ -29,10 +29,18 @@ export default function Page({
     id: number;
   }
 
+  // interface vol {
+  //   id: number;
+  //   poc: pocForVol;
+  //   user_id: user_id;
+  // }
   interface vol {
     id: number;
-    poc: pocForVol;
-    user_id: user_id;
+    name: string;
+    email: string;
+    role: string;
+    Poc: string;
+    closed: string;
   }
 
   interface poc {
@@ -52,16 +60,17 @@ export default function Page({
   // );
   const { data, isLoading, isError, isSuccess, isRefetching } = useQuery<vol[]>(
     {
-      queryKey: ["vol"],
+      queryKey: ["volInviteList"],
       queryFn: async () => {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/volbyPoc/${params.slug}`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/volinvites/${params.slug}`,
           {
             headers: {
               authorization: `Bearer ${session.data?.user.auth_token}`,
             },
           },
         );
+        console.log(res);
         return res.json();
       },
       refetchOnMount: true,
