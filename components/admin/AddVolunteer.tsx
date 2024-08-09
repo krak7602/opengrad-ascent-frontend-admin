@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSession } from "next-auth/react";
 import axios from "axios";
+import { QueryClient, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function AddVolunteer({ id }: { id: number }) {
   const [open, setOpen] = React.useState(false);
@@ -20,16 +21,25 @@ export function AddVolunteer({ id }: { id: number }) {
   const [volEmail, setVolEmail] = React.useState("");
   const [send, setSend] = React.useState(false);
   const session = useSession();
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (volEmail && volName) {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationKey: ['inviteVolunteer', id],
+    mutationFn: async (data: { name: string; email: string; Poc: number }) => {
+      const resp= await axios.post(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/volinvite`,
+        data,
+        {
+          headers: {
+            authorization: `Bearer ${session.data?.user.auth_token}`,
+          },
+        }
+      );
+      if (resp.data.id) {
         const resp = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/volinvite`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/profileset`,
           {
-            name: volName,
-            email: volEmail,
-            Poc: id,
+            destination: volEmail,
           },
           {
             headers: {
@@ -37,23 +47,58 @@ export function AddVolunteer({ id }: { id: number }) {
             },
           },
         );
+         
+      }
+    },
+    onSettled:()=>{
+      setSend(true);
+      setVolName("");
+      setVolEmail("");
+      queryClient.invalidateQueries({ queryKey: ["volInviteList"] });
+    }
+    
+  })
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (volEmail && volName) {
+        // const resp = await axios.post(
+        //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/volinvite`,
+        //   {
+        //     name: volName,
+        //     email: volEmail,
+        //     Poc: id,
+        //   },
+        //   {
+        //     headers: {
+        //       authorization: `Bearer ${session.data?.user.auth_token}`,
+        //     },
+        //   },
+        // );
 
-        if (resp.data.id) {
-          const resp = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/profileset`,
-            {
-              destination: volEmail,
-            },
-            {
-              headers: {
-                authorization: `Bearer ${session.data?.user.auth_token}`,
-              },
-            },
-          );
-          if (resp.data.success) {
-            setSend(true);
-          }
-        }
+        // if (resp.data.id) {
+        //   const resp = await axios.post(
+        //     `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/profileset`,
+        //     {
+        //       destination: volEmail,
+        //     },
+        //     {
+        //       headers: {
+        //         authorization: `Bearer ${session.data?.user.auth_token}`,
+        //       },
+        //     },
+        //   );
+        //   if (resp.data.success) {
+        //     setSend(true);
+        //   }
+        // }
+        const data = {
+          name: volName,
+          email: volEmail,
+          Poc: id,
+        };
+        mutation.mutate(data);
+        
       }
     } catch (e) {
       console.log(e);

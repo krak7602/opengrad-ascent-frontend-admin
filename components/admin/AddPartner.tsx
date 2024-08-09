@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import axios from "axios";
 import { useSession } from "next-auth/react";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 export function AddPartner() {
   const [open, setOpen] = React.useState(false);
@@ -69,40 +70,85 @@ function PartnerAddForm({ className }: React.ComponentProps<"form">) {
   const [orgEmail, setOrgEmail] = React.useState("");
   const session = useSession();
   const [send, setSend] = React.useState(false);
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (orgEmail && orgName) {
-        const resp = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/pocinvite`,
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationKey: ["createPartner"],
+    mutationFn: async (data: { orgName: string; orgEmail: string }) => {
+      const invite_resp = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/pocinvite`,
+        {
+          name: data.orgName,
+          email: data.orgEmail,
+        },
+        {
+          headers: {
+            authorization: `Bearer ${session.data?.user.auth_token}`,
+          },
+        }
+      );
+
+      if (invite_resp.data.id) {
+        const profileset_resp = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/profileset`,
           {
-            name: orgName,
-            email: orgEmail,
+            destination: data.orgEmail,
           },
           {
             headers: {
               authorization: `Bearer ${session.data?.user.auth_token}`,
             },
-          },
-        );
-
-        if (resp.data.id) {
-          const resp = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/profileset`,
-            {
-              destination: orgEmail,
-            },
-            {
-              headers: {
-                authorization: `Bearer ${session.data?.user.auth_token}`,
-              },
-            },
-          );
-          if (resp.data.success) {
-            setSend(true);
           }
+        );
+        if (profileset_resp.data.success) {
+          setSend(true);
+          return profileset_resp;
         }
       }
+    },
+    onSettled: () => {
+      setSend(true);
+      setOrgName("");
+      setOrgEmail("");
+      queryClient.invalidateQueries({ queryKey: ["pocInviteList"] });
+    },
+  });
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      mutation.mutate({ orgName, orgEmail });
+
+      // if (orgEmail && orgName) {
+      // const resp = await axios.post(
+      //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/pocinvite`,
+      //   {
+      //     name: orgName,
+      //     email: orgEmail,
+      //   },
+      //   {
+      //     headers: {
+      //       authorization: `Bearer ${session.data?.user.auth_token}`,
+      //     },
+      //   },
+      // );
+
+      // if (resp.data.id) {
+      //   const resp = await axios.post(
+      //     `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/profileset`,
+      //     {
+      //       destination: orgEmail,
+      //     },
+      //     {
+      //       headers: {
+      //         authorization: `Bearer ${session.data?.user.auth_token}`,
+      //       },
+      //     },
+      //   );
+      //   if (resp.data.success) {
+      //     setSend(true);
+      //   }
+      // }
+
+      //}
     } catch (e) {
       console.log(e);
     }

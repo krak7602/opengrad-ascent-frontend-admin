@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/command";
 import { useSession } from "next-auth/react";
 import { useFetch } from "@/lib/useFetch";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface poc_user_id {
   id: number;
@@ -53,42 +54,119 @@ export function AddCohort() {
   const [recipientPartners, setRecipientPartners] = useListState<poc>([]);
   const [recipientPartnerCount, setRecipientPartnerCount] = useState(0);
   const [send, setSend] = useState(false);
-  const { data, loading, error, refetch, abort } = useFetch<poc[]>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/poc`,
-    {
-      headers: {
-        authorization: `Bearer ${session.data?.user.auth_token}`,
-      },
-      autoInvoke: true,
+  const queryClient = useQueryClient();
+  const {
+    data,
+    isError,
+    isLoading,
+    isSuccess,
+  }: {
+    data: poc[] | undefined;
+    isError: boolean;
+    isLoading: boolean;
+    isSuccess: boolean;
+  } = useQuery({
+    queryKey: ["poc"],
+    queryFn: async () => {
+      const resp = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/poc`,
+        {
+          headers: {
+            authorization: `Bearer ${session.data?.user.auth_token}`,
+          },
+        },
+      );
+      return resp.data;
     },
-    [session],
-  );
+    enabled: !!session.data?.user.auth_token,
+  });
+  console.log(data);
+
+  const mutation = useMutation({
+    mutationKey: ["createCohort"],
+    mutationFn: async (data: any) => {
+      const resp = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/cohort/create`,
+        data,
+        {
+          headers: {
+            authorization: `Bearer ${session.data?.user.auth_token}`,
+          },
+        },
+      );
+      return resp.data;
+    },
+    onSettled: () => {
+      //setOpen(false);
+      setSend(true);
+      setOrgName("");
+      setFromDate(undefined);
+      setToDate(undefined);
+      setRecipientPartnerCount(0);
+      setRecipientPartners.setState([]);
+      queryClient.invalidateQueries({ queryKey: ["cohort"] });
+    },
+
+    onError: (error) => {
+      console.error("Error creating cohort:", error);
+    },
+  });
+  // const { data, loading, error, refetch, abort } = useFetch<poc[]>(
+  //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/poc`,
+  //   {
+  //     headers: {
+  //       authorization: `Bearer ${session.data?.user.auth_token}`,
+  //     },
+  //     autoInvoke: true,
+  //   },
+  //   [session],
+  // );
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const pocs = recipientPartners.map((element) => element.id);
+
+    const createCohort = {
+      name: orgName,
+      startDate: fromDate
+        ? `${fromDate?.getDate()}-${
+            fromDate?.getMonth() + 1
+          }-${fromDate?.getFullYear()}`
+        : "",
+      endDate: toDate
+        ? `${toDate?.getDate()}-${
+            toDate?.getMonth() + 1
+          }-${toDate?.getFullYear()}`
+        : "",
+      poc: pocs,
+    };
+    // try {
+    //   if (fromDate && toDate && orgName !== "") {
+    //     const resp = await axios.post(
+    //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/cohort/create`,
+    //       {
+    //         name: orgName,
+    //         startDate: `${fromDate.getDate()}-${fromDate.getMonth() + 1}-${fromDate.getFullYear()}`,
+    //         endDate: `${toDate.getDate()}-${toDate.getMonth() + 1}-${toDate.getFullYear()}`,
+    //         poc: pocs,
+    //       },
+    //       {
+    //         headers: {
+    //           authorization: `Bearer ${session.data?.user.auth_token}`,
+    //         },
+    //       },
+    //     );
+    //     if (resp.data.id) {
+    //       setSend(true);
+    //     }
+    //   }
+    // } catch (e) {
+    //   console.log(e);
+    // }
     try {
-      if (fromDate && toDate && orgName !== "") {
-        const resp = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/cohort/create`,
-          {
-            name: orgName,
-            startDate: `${fromDate.getDate()}-${fromDate.getMonth() + 1}-${fromDate.getFullYear()}`,
-            endDate: `${toDate.getDate()}-${toDate.getMonth() + 1}-${toDate.getFullYear()}`,
-            poc: pocs,
-          },
-          {
-            headers: {
-              authorization: `Bearer ${session.data?.user.auth_token}`,
-            },
-          },
-        );
-        if (resp.data.id) {
-          setSend(true);
-        }
-      }
+      mutation.mutate(createCohort);
     } catch (e) {
-      console.log(e);
+      console.error("Error creating cohort:", e);
     }
   };
 

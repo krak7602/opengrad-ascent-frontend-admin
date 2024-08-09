@@ -27,6 +27,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useMutation,useQueryClient } from "@tanstack/react-query";
 interface user_id {
   id: number;
   name: string;
@@ -55,6 +56,7 @@ export function AddStudent({ cohId, data }: { cohId: string; data: vols[] }) {
   const [volSelected, setVolSelected] = React.useState<vol>();
   const session = useSession();
   const [send, setSend] = React.useState(false);
+  const queryClient=useQueryClient()
 
   interface user_id {
     id: number;
@@ -76,19 +78,13 @@ export function AddStudent({ cohId, data }: { cohId: string; data: vols[] }) {
     vol: vol[];
   }
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (studEmail && studName && studPhone) {
+  const mutation = useMutation({
+    mutationKey: ["addStudent"],
+    mutationFn:async (data:any) => {
+      try {
         const resp = await axios.post(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/students/create`,
-          {
-            name: studName,
-            email: studEmail,
-            phone: studPhone,
-            volId: volSelected?.id,
-            cohortId: Number(cohId),
-          },
+          data,
           {
             headers: {
               Authorization: `Bearer ${session.data?.user.auth_token}`,
@@ -97,8 +93,30 @@ export function AddStudent({ cohId, data }: { cohId: string; data: vols[] }) {
         );
 
         if (resp.data.id) {
-          setSend(true);
+          return { id: resp.data.id, name: studName, email: studEmail };
         }
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    onSettled: () => {
+      setSend(true);
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+    },
+  })
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (studEmail && studName && studPhone) {
+        const data = {
+          name: studName,
+          email: studEmail,
+          phone: studPhone,
+          volId: volSelected?.id,
+          cohortId: Number(cohId),
+        };
+        mutation.mutate(data);
       }
     } catch (e) {
       console.log(e);
