@@ -24,8 +24,14 @@ import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
 import { useFetch } from "@/lib/useFetch";
 import { useSession } from "next-auth/react";
+import { useQuery } from "@tanstack/react-query";
+import Error from "../Error";
+import Loading from "../Loading";
+import Refetching from "../Refetching";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function FeedbackForm() {
+  const queryClient = useQueryClient();
   interface FeedbackItem {
     type: string;
     question: string;
@@ -40,16 +46,34 @@ export default function FeedbackForm() {
     startDate: string;
     endDate: string;
   }
-  const cohortData = useFetch<cohortColumn[]>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/cohort/all`,
-    {
-      headers: {
-        authorization: `Bearer ${session.data?.user.auth_token}`,
-      },
-      autoInvoke: true,
+
+  const cohortData = useQuery<cohortColumn[]>({
+    queryKey: ["cohortListingFeedback"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/cohort/all`,
+        {
+          headers: {
+            authorization: `Bearer ${session.data?.user.auth_token}`,
+          },
+        },
+      );
+      return res.json();
     },
-    [session],
-  );
+    refetchOnMount: true,
+    enabled: !!session.data?.user.auth_token,
+  });
+
+  // const cohortData = useFetch<cohortColumn[]>(
+  //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/cohort/all`,
+  //   {
+  //     headers: {
+  //       authorization: `Bearer ${session.data?.user.auth_token}`,
+  //     },
+  //     autoInvoke: true,
+  //   },
+  //   [session],
+  // );
   interface poc {
     id: number;
     user_id: user_id;
@@ -61,16 +85,34 @@ export default function FeedbackForm() {
     email: string;
     role: string;
   }
-  const partnerData = useFetch<poc[]>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/poc`,
-    {
-      headers: {
-        authorization: `Bearer ${session.data?.user.auth_token}`,
-      },
-      autoInvoke: true,
+
+  const partnerData = useQuery<poc[]>({
+    queryKey: ["partnerListingFeedback"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/poc`,
+        {
+          headers: {
+            authorization: `Bearer ${session.data?.user.auth_token}`,
+          },
+        },
+      );
+      return res.json();
     },
-    [session],
-  );
+    refetchOnMount: true,
+    enabled: !!session.data?.user.auth_token,
+  });
+
+  // const partnerData = useFetch<poc[]>(
+  //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/poc`,
+  //   {
+  //     headers: {
+  //       authorization: `Bearer ${session.data?.user.auth_token}`,
+  //     },
+  //     autoInvoke: true,
+  //   },
+  //   [session],
+  // );
 
   const router = useRouter();
   const { toast } = useToast();
@@ -222,10 +264,9 @@ export default function FeedbackForm() {
     });
   };
 
-  const formSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (recipientPartnerCount != 0) {
+  const pocFeedbackMutation = useMutation({
+    mutationKey: ["pocFeedback"],
+    mutationFn: async () => {
       try {
         if (questionCount != 0) {
           const parts = recipientPartners.map((x) => x.id);
@@ -260,10 +301,47 @@ export default function FeedbackForm() {
             );
           }
         }
+        //   const resp = await axios.post(
+        //     `${process.env.NEXT_PUBLIC_API_BASE_URL}/students/create`,
+        //     data,
+        //     {
+        //       headers: {
+        //         Authorization: `Bearer ${session.data?.user.auth_token}`,
+        //       },
+        //     },
+        //   );
+
+        //   if (resp.data.id) {
+        //     return { id: resp.data.id, name: studName, email: studEmail };
+        //   }
+        // } catch (e) {
+        //   console.log(e);
+        // }
       } catch (e) {
         console.log(e);
       }
-    } else if (recipientCohortCount != 0) {
+    },
+    onSettled: () => {
+      toast({
+        title: "Feedback form sent",
+      });
+      setQuestionCount(0);
+      setFeedbackTitle("");
+      setOpen(false);
+      setValue("");
+      setRecipientCohortCount(0);
+      setRecipientPartnerCount(0);
+      setRecipientCohorts.setState([]);
+      setRecipientPartners.setState([]);
+      setQuestions.setState([]);
+      // setSend(true);
+      // queryClient.invalidateQueries({ queryKey: ["students"] });
+    },
+  });
+
+  const cohortFeedbackMutation = useMutation({
+    mutationKey: ["cohortFeedback"],
+    mutationFn: async () => {
       try {
         if (questionCount != 0) {
           const cohs = recipientCohorts.map((x) => x.id);
@@ -298,22 +376,138 @@ export default function FeedbackForm() {
             );
           }
         }
+        //   const resp = await axios.post(
+        //     `${process.env.NEXT_PUBLIC_API_BASE_URL}/students/create`,
+        //     data,
+        //     {
+        //       headers: {
+        //         Authorization: `Bearer ${session.data?.user.auth_token}`,
+        //       },
+        //     },
+        //   );
+
+        //   if (resp.data.id) {
+        //     return { id: resp.data.id, name: studName, email: studEmail };
+        //   }
+        // } catch (e) {
+        //   console.log(e);
+        // }
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    onSettled: () => {
+      toast({
+        title: "Feedback form sent",
+      });
+      setQuestionCount(0);
+      setFeedbackTitle("");
+      setOpen(false);
+      setValue("");
+      setRecipientCohortCount(0);
+      setRecipientPartnerCount(0);
+      setRecipientCohorts.setState([]);
+      setRecipientPartners.setState([]);
+      setQuestions.setState([]);
+      // setSend(true);
+      // queryClient.invalidateQueries({ queryKey: ["students"] });
+    },
+  });
+
+  const formSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (recipientPartnerCount != 0) {
+      try {
+        pocFeedbackMutation.mutate();
+        // if (questionCount != 0) {
+        //   const parts = recipientPartners.map((x) => x.id);
+        //   const resp = await axios.post(
+        //     `${process.env.NEXT_PUBLIC_API_BASE_URL}/forms/create`,
+        //     {
+        //       receipientType: "poc",
+        //       receipientId: parts,
+        //       feedbackItemCount: questionCount,
+        //       feedbackItems: questions,
+        //     },
+        //     {
+        //       headers: {
+        //         authorization: `Bearer ${session.data?.user.auth_token}`,
+        //       },
+        //     },
+        //   );
+        //   if (resp.data.id) {
+        //     const resp2 = await axios.post(
+        //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/notification/poc/create`,
+        //       {
+        //         typeofnotification: "form",
+        //         Message: feedbackTitle,
+        //         form_id: resp.data.id,
+        //         receipient_id: parts,
+        //       },
+        //       {
+        //         headers: {
+        //           authorization: `Bearer ${session.data?.user.auth_token}`,
+        //         },
+        //       },
+        //     );
+        //   }
+        // }
+      } catch (e) {
+        console.log(e);
+      }
+    } else if (recipientCohortCount != 0) {
+      try {
+        cohortFeedbackMutation.mutate();
+        // if (questionCount != 0) {
+        //   const cohs = recipientCohorts.map((x) => x.id);
+        //   const resp = await axios.post(
+        //     `${process.env.NEXT_PUBLIC_API_BASE_URL}/forms/create`,
+        //     {
+        //       receipientType: "cohort",
+        //       receipientId: cohs,
+        //       feedbackItemCount: questionCount,
+        //       feedbackItems: questions,
+        //     },
+        //     {
+        //       headers: {
+        //         authorization: `Bearer ${session.data?.user.auth_token}`,
+        //       },
+        //     },
+        //   );
+        //   if (resp.data.id) {
+        //     const resp2 = await axios.post(
+        //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/notification/cohort/create`,
+        //       {
+        //         typeofnotification: "form",
+        //         Message: feedbackTitle,
+        //         form_id: resp.data.id,
+        //         receipient_id: cohs,
+        //       },
+        //       {
+        //         headers: {
+        //           authorization: `Bearer ${session.data?.user.auth_token}`,
+        //         },
+        //       },
+        //     );
+        //   }
+        // }
       } catch (e) {
         console.log(e);
       }
     }
-    toast({
-      title: "Feedback form sent",
-    });
-    setQuestionCount(0);
-    setFeedbackTitle("");
-    setOpen(false);
-    setValue("");
-    setRecipientCohortCount(0);
-    setRecipientPartnerCount(0);
-    setRecipientCohorts.setState([]);
-    setRecipientPartners.setState([]);
-    setQuestions.setState([]);
+    // toast({
+    //   title: "Feedback form sent",
+    // });
+    // setQuestionCount(0);
+    // setFeedbackTitle("");
+    // setOpen(false);
+    // setValue("");
+    // setRecipientCohortCount(0);
+    // setRecipientPartnerCount(0);
+    // setRecipientCohorts.setState([]);
+    // setRecipientPartners.setState([]);
+    // setQuestions.setState([]);
   };
 
   return (

@@ -27,7 +27,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { useMutation,useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 interface user_id {
   id: number;
   name: string;
@@ -56,7 +56,7 @@ export function AddStudent({ cohId, data }: { cohId: string; data: vols[] }) {
   const [volSelected, setVolSelected] = React.useState<vol>();
   const session = useSession();
   const [send, setSend] = React.useState(false);
-  const queryClient=useQueryClient()
+  const queryClient = useQueryClient();
 
   interface user_id {
     id: number;
@@ -80,7 +80,7 @@ export function AddStudent({ cohId, data }: { cohId: string; data: vols[] }) {
 
   const mutation = useMutation({
     mutationKey: ["addStudent"],
-    mutationFn:async (data:any) => {
+    mutationFn: async (data: any) => {
       try {
         const resp = await axios.post(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/students/create`,
@@ -101,9 +101,9 @@ export function AddStudent({ cohId, data }: { cohId: string; data: vols[] }) {
     },
     onSettled: () => {
       setSend(true);
-      queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ["students"] });
     },
-  })
+  });
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
