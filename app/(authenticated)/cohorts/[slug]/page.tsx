@@ -10,7 +10,7 @@ import { useFetch } from "@/lib/useFetch";
 import { StudentTable } from "@/components/admin/StudentTable";
 import { useQuery } from "@tanstack/react-query";
 import Error from "@/components/Error";
-import Loading from "@/components/Loading"; 
+import Loading from "@/components/Loading";
 import Refetching from "@/components/Refetching";
 
 export default function Page({
@@ -51,8 +51,8 @@ export default function Page({
     cohortId: number;
   }
 
-  const {data,isError,isLoading,isRefetching} = useQuery({
-    queryKey: ['volunteer', Number(params.slug)],
+  const { data, isError, isLoading, isRefetching } = useQuery({
+    queryKey: ["volunteer", Number(params.slug)],
     queryFn: async () => {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/cohort/volByCohort/${Number(params.slug)}`,
@@ -67,8 +67,8 @@ export default function Page({
     refetchInterval: 10000,
     staleTime: 60000,
     enabled: !!session.data?.user.auth_token,
-    refetchOnMount:true
-  })
+    refetchOnMount: true,
+  });
 
   // const { data, loading, error, refetch, abort } = useFetch<vols[]>(
   //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/cohort/volByCohort/${Number(params.slug)}`,
@@ -91,26 +91,31 @@ export default function Page({
   //   },
   //   [session],
   // );
-const {data:dataStudents,isError:stdErr,isLoading:stdLoading,isRefetching:stdRefetching}=useQuery({
-  queryKey: ['students', Number(params.slug)],
-  queryFn: async () => {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/students/getbyCohort/${Number(params.slug)}`,
-      {
-        headers: {
-          authorization: `Bearer ${session.data?.user.auth_token}`,
+  const {
+    data: dataStudents,
+    isError: stdErr,
+    isLoading: stdLoading,
+    isRefetching: stdRefetching,
+  } = useQuery({
+    queryKey: ["students", Number(params.slug)],
+    queryFn: async () => {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/students/getbyCohort/${Number(params.slug)}`,
+        {
+          headers: {
+            authorization: `Bearer ${session.data?.user.auth_token}`,
+          },
         },
-      },
-    );
-    return await response.json();
-  },
-  refetchInterval: 10000,
-  staleTime: 60000,
-  enabled:!!session.data?.user.auth_token,
-  refetchOnMount:true
-})
-  
-  console.log(dataStudents)
+      );
+      return await response.json();
+    },
+    refetchInterval: 10000,
+    staleTime: 60000,
+    enabled: !!session.data?.user.auth_token,
+    refetchOnMount: true,
+  });
+
+  console.log(dataStudents);
   return (
     <Tabs id="cohort-tab" defaultValue="students">
       <div className="container mx-auto my-6 px-2 lg:px-8">
@@ -138,20 +143,17 @@ const {data:dataStudents,isError:stdErr,isLoading:stdLoading,isRefetching:stdRef
         </div>
         <div className="overflow-x-auto">
           <TabsContent value="students">
-            {stdRefetching && (<Refetching/>)}
+            {stdRefetching && <Refetching />}
             {stdErr && <Error />}
             {!stdErr && stdLoading && <Loading />}
             {!stdErr && !stdLoading && dataStudents && (
               <div>
-                <StudentTable
-                  columns={studentColumns}
-                  data={dataStudents}
-                />
+                <StudentTable columns={studentColumns} data={dataStudents} />
               </div>
             )}
           </TabsContent>
           <TabsContent value="volunteers">
-            {isRefetching && <Refetching/>}
+            {isRefetching && <Refetching />}
             {isError && <Error />}
             {!isError && isLoading && <Loading />}
             {!isError && !isLoading && data && data.constructor === Array && (

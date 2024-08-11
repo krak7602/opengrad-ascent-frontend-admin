@@ -23,6 +23,9 @@ import { useFetch } from "@/lib/useFetch";
 import { NotificationTable } from "@/components/admin/NotificationTable";
 import { columns } from "@/components/admin/NotificationColumn";
 import { useQuery } from "@tanstack/react-query";
+import Error from "@/components/Error";
+import Loading from "@/components/Loading";
+import Refetching from "@/components/Refetching";
 
 export default function Page({
   params,
@@ -39,16 +42,33 @@ export default function Page({
     startDate: string;
     endDate: string;
   }
-  const cohortData = useFetch<cohortColumn[]>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/cohort/all`,
-    {
-      headers: {
-        authorization: `Bearer ${session.data?.user.auth_token}`,
-      },
-      autoInvoke: true,
+
+  const cohortData = useQuery<cohortColumn[]>({
+    queryKey: ["cohortListingFeedback"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/cohort/all`,
+        {
+          headers: {
+            authorization: `Bearer ${session.data?.user.auth_token}`,
+          },
+        },
+      );
+      return res.json();
     },
-    [session]
-  );
+    refetchOnMount: true,
+    enabled: !!session.data?.user.auth_token,
+  });
+  // const cohortData = useFetch<cohortColumn[]>(
+  //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/cohort/all`,
+  //   {
+  //     headers: {
+  //       authorization: `Bearer ${session.data?.user.auth_token}`,
+  //     },
+  //     autoInvoke: true,
+  //   },
+  //   [session],
+  // );
   interface poc {
     id: number;
     user_id: user_id;
@@ -60,21 +80,39 @@ export default function Page({
     email: string;
     role: string;
   }
-  const partnerData = useFetch<poc[]>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/poc`,
-    {
-      headers: {
-        authorization: `Bearer ${session.data?.user.auth_token}`,
-      },
-      autoInvoke: true,
+
+  const partnerData = useQuery<poc[]>({
+    queryKey: ["partnerListingFeedback"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/poc`,
+        {
+          headers: {
+            authorization: `Bearer ${session.data?.user.auth_token}`,
+          },
+        },
+      );
+      return res.json();
     },
-    [session]
-  );
+    refetchOnMount: true,
+    enabled: !!session.data?.user.auth_token,
+  });
+
+  // const partnerData = useFetch<poc[]>(
+  //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/get/poc`,
+  //   {
+  //     headers: {
+  //       authorization: `Bearer ${session.data?.user.auth_token}`,
+  //     },
+  //     autoInvoke: true,
+  //   },
+  //   [session],
+  // );
 
   const [recipientCohortCount, setRecipientCohortCount] = useState(0);
   const [recipientPartnerCount, setRecipientPartnerCount] = useState(0);
   const [recipientCohorts, setRecipientCohorts] = useListState<cohortColumn>(
-    []
+    [],
   );
   const [recipientPartners, setRecipientPartners] = useListState<poc>([]);
   const [open, setOpen] = useState(false);
@@ -128,16 +166,34 @@ export default function Page({
     form_id: number;
     receipient_id: number[];
   }
-  const notifDataCohort = useFetch<notif[]>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/notification/cohort/get/${recipientCohorts[0]?.id}`,
-    {
-      headers: {
-        authorization: `Bearer ${session.data?.user.auth_token}`,
-      },
-      autoInvoke: true,
+
+  const notifDataCohort = useQuery<notif[]>({
+    queryKey: ["notifDataCohort"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/notification/cohort/get/${recipientCohorts[0]?.id}`,
+        {
+          headers: {
+            authorization: `Bearer ${session.data?.user.auth_token}`,
+          },
+        },
+      );
+      return res.json();
     },
-    [session, recipientCohorts, recipientPartners]
-  );
+    refetchOnMount: true,
+    enabled: !!session.data?.user.auth_token,
+  });
+
+  // const notifDataCohort = useFetch<notif[]>(
+  //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/notification/cohort/get/${recipientCohorts[0]?.id}`,
+  //   {
+  //     headers: {
+  //       authorization: `Bearer ${session.data?.user.auth_token}`,
+  //     },
+  //     autoInvoke: true,
+  //   },
+  //   [session, recipientCohorts, recipientPartners],
+  // );
   // const { data: notifDataCohort,isLoading:notifCohortLoading,isError:notifCohortError} = useQuery({
   //   queryKey: [
   //     "NotiCohort",
@@ -161,16 +217,33 @@ export default function Page({
   //   refetchOnMount: true,
   // });
 
-  const notifDataPoc = useFetch<notif[]>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/notification/poc/get/${recipientPartners[0]?.id}`,
-    {
-      headers: {
-        authorization: `Bearer ${session.data?.user.auth_token}`,
-      },
-      autoInvoke: true,
+  const notifDataPoc = useQuery<notif[]>({
+    queryKey: ["notifDataCohort"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/notification/poc/get/${recipientPartners[0]?.id}`,
+        {
+          headers: {
+            authorization: `Bearer ${session.data?.user.auth_token}`,
+          },
+        },
+      );
+      return res.json();
     },
-    [session, recipientCohorts, recipientPartners]
-  );
+    refetchOnMount: true,
+    enabled: !!session.data?.user.auth_token,
+  });
+
+  // const notifDataPoc = useFetch<notif[]>(
+  //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/notification/poc/get/${recipientPartners[0]?.id}`,
+  //   {
+  //     headers: {
+  //       authorization: `Bearer ${session.data?.user.auth_token}`,
+  //     },
+  //     autoInvoke: true,
+  //   },
+  //   [session, recipientCohorts, recipientPartners],
+  // );
   // const { data: notifDataPoc ,isLoading:notifPocLoading,isError:notifPocError} = useQuery({
   //   queryKey: [
   //     "NotiPoc",
@@ -311,7 +384,24 @@ export default function Page({
                 </ToggleGroup>
               </div>
             </div>
-            {notifDataCohort.data &&
+            <div>
+              {notifDataCohort.isError && <Error />}
+              {!notifDataCohort.isError && notifDataCohort.isLoading && (
+                <Loading />
+              )}
+              {!notifDataCohort.isError &&
+                !notifDataCohort.isLoading &&
+                notifDataCohort.data &&
+                notifDataCohort.data.constructor === Array && (
+                  <div>
+                    <NotificationTable
+                      columns={columns}
+                      data={[...notifDataCohort.data].reverse()}
+                    />
+                  </div>
+                )}
+            </div>
+            {/* {notifDataCohort.data &&
               notifDataCohort.data.constructor === Array && (
                 <div>
                   <NotificationTable
@@ -319,15 +409,30 @@ export default function Page({
                     data={[...notifDataCohort.data].reverse()}
                   />
                 </div>
-              )}
-            {notifDataPoc.data && notifDataPoc.data.constructor === Array && (
+              )} */}
+            <div>
+              {notifDataPoc.isError && <Error />}
+              {!notifDataPoc.isError && notifDataPoc.isLoading && <Loading />}
+              {!notifDataPoc.isError &&
+                !notifDataPoc.isLoading &&
+                notifDataPoc.data &&
+                notifDataPoc.data.constructor === Array && (
+                  <div>
+                    <NotificationTable
+                      columns={columns}
+                      data={[...notifDataPoc.data].reverse()}
+                    />
+                  </div>
+                )}
+            </div>
+            {/* {notifDataPoc.data && notifDataPoc.data.constructor === Array && (
               <div>
                 <NotificationTable
                   columns={columns}
                   data={[...notifDataPoc.data].reverse()}
                 />
               </div>
-            )}
+            )} */}
           </div>
         </TabsContent>
       </Tabs>
